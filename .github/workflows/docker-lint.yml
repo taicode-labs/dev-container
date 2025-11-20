@@ -1,0 +1,54 @@
+name: Docker Lint
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-lint.yml'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-lint.yml'
+
+jobs:
+  hadolint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+  docker-build-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (test)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: dev-container:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test image
+        run: |
+          docker run --rm dev-container:test node --version
+          docker run --rm dev-container:test git --version
+          docker run --rm dev-container:test zsh --version
