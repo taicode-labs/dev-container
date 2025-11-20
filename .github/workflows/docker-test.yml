@@ -14,13 +14,6 @@ on:
       - '.github/workflows/docker-lint.yml'
 
 jobs:
-  hadolint:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
   docker-build-test:
     runs-on: ubuntu-latest
     
